@@ -352,18 +352,19 @@ async def speech(request: Request, user=Depends(get_verified_user)):
 
     r = None
     if request.app.state.config.TTS_ENGINE == "openai":
-        payload["model"] = request.app.state.config.TTS_MODEL
+        if not payload.get("model"):
+            payload["model"] = request.app.state.config.TTS_MODEL
+
+        if request.app.state.config.TTS_OPENAI_PARAMS:
+            for key, value in request.app.state.config.TTS_OPENAI_PARAMS.items():
+                if key not in payload:
+                    payload[key] = value
 
         try:
             timeout = aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
             async with aiohttp.ClientSession(
                 timeout=timeout, trust_env=True
             ) as session:
-                payload = {
-                    **payload,
-                    **(request.app.state.config.TTS_OPENAI_PARAMS or {}),
-                }
-
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": f"Bearer {request.app.state.config.TTS_OPENAI_API_KEY}",
