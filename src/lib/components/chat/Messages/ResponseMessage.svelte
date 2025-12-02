@@ -205,6 +205,13 @@
 			return;
 		}
 
+		const chat = await getChatById(localStorage.token, chatId).catch((error) => {
+			toast.error(`${error}`);
+		});
+		if (!chat) {
+			return;
+		}
+
 		speaking = true;
 		const content = removeAllDetails(message.content);
 
@@ -299,12 +306,43 @@
 				}
 			} else {
 				for (const [idx, sentence] of messageContentParts.entries()) {
+					console.log('a', model, chat);
+					const ttsVoice = [
+						chat?.chat?.params?.tts?.voice,
+						model?.info?.meta?.tts?.voice,
+						$settings?.audio?.tts?.voice,
+						$config?.audio?.tts?.voice
+					].find((v) => v !== null);
+					let ttsModel = [
+						chat?.chat?.params?.tts?.model,
+						model?.info?.meta?.tts?.model,
+						$config?.audio?.tts?.model
+					].find((m) => m !== null);
+					let ttsParams = [
+						chat?.chat?.params?.tts?.params,
+						model?.info?.meta?.tts?.params,
+						$config?.audio?.tts?.params
+					].find((p) => p !== null);
+					if (ttsParams) {
+						try {
+							ttsParams = JSON.parse(ttsParams);
+						} catch {
+							ttsParams = {};
+						}
+					}
+
+					await saveChatHandler
+					// let defaultVoice = model?.info?.meta?.tts?.voice ?? $settings?.audio?.tts?.defaultVoice;
+					// let defaultModel = model?.info?.meta?.tts?.voice ?? $config?.audio?.tts?.model_id;
 					const res = await synthesizeOpenAISpeech(
 						localStorage.token,
-						$settings?.audio?.tts?.defaultVoice === $config.audio.tts.voice
-							? ($settings?.audio?.tts?.voice ?? $config?.audio?.tts?.voice)
-							: $config?.audio?.tts?.voice,
-						sentence
+						// $settings?.audio?.tts?.defaultVoice === $config.audio.tts.voice
+						// 	? ($settings?.audio?.tts?.voice ?? $config?.audio?.tts?.voice)
+						// 	: $config?.audio?.tts?.voice,
+						ttsVoice,
+						sentence,
+						ttsModel,
+						ttsParams
 					).catch((error) => {
 						console.error(error);
 						toast.error(`${error}`);
