@@ -331,7 +331,6 @@
 						}
 					}
 
-					await saveChatHandler
 					// let defaultVoice = model?.info?.meta?.tts?.voice ?? $settings?.audio?.tts?.defaultVoice;
 					// let defaultModel = model?.info?.meta?.tts?.voice ?? $config?.audio?.tts?.model_id;
 					const res = await synthesizeOpenAISpeech(
