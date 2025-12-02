@@ -5,6 +5,7 @@
 
 	import XMark from '$lib/components/icons/XMark.svelte';
 	import AdvancedParams from '../Settings/Advanced/AdvancedParams.svelte';
+	import TextToSpeech from '$lib/components/workspace/Models/TextToSpeech.svelte';
 	import Valves from '$lib/components/chat/Controls/Valves.svelte';
 	import FileItem from '$lib/components/common/FileItem.svelte';
 	import Collapsible from '$lib/components/common/Collapsible.svelte';
@@ -84,6 +85,16 @@
 							rows="4"
 							placeholder={$i18n.t('Enter system prompt')}
 						/>
+					</div>
+				</Collapsible>
+
+				<hr class="my-2 border-gray-50 dark:border-gray-700/10" />
+			{/if}
+
+			{#if $user?.role === 'admin' || ($user?.permissions.chat?.tts ?? true)}
+				<Collapsible title={$i18n.t('Text to Speech')} open={false} buttonClassName="w-full">
+					<div class="text-sm mt-1.5" slot="content">
+						<TextToSpeech bind:tts={params.tts} />
 					</div>
 				</Collapsible>
 
