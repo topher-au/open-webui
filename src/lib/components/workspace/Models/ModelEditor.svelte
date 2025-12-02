@@ -19,10 +19,10 @@
 	import Textarea from '$lib/components/common/Textarea.svelte';
 	import AccessControl from '../common/AccessControl.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
-	import XMark from '$lib/components/icons/XMark.svelte';
 	import DefaultFiltersSelector from './DefaultFiltersSelector.svelte';
 	import DefaultFeatures from './DefaultFeatures.svelte';
 	import PromptSuggestions from './PromptSuggestions.svelte';
+	import TextToSpeech from './TextToSpeech.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -42,6 +42,12 @@
 
 	let showAdvanced = false;
 	let showPreview = false;
+
+	let tts = {
+		voice: null,
+		model: null,
+		params: null
+	};
 
 	let loaded = false;
 
@@ -72,7 +78,8 @@
 			profile_image_url: `${WEBUI_BASE_URL}/static/favicon.png`,
 			description: '',
 			suggestion_prompts: null,
-			tags: []
+			tags: [],
+			tts: null
 		},
 		params: {
 			system: ''
@@ -148,6 +155,22 @@
 
 		info.access_control = accessControl;
 		info.meta.capabilities = capabilities;
+
+		let ttsParams = {};
+		try {
+			ttsParams = tts.params ? JSON.parse(tts.params) : {};
+			if (Object.keys(ttsParams).length === 0) {
+				tts.params = null;
+			} else {
+				tts.params = JSON.stringify(ttsParams, null, 2);
+			}
+		} catch (e) {
+			toast.error($i18n.t('Invalid JSON format for Parameters'));
+			loading = false;
+			return;
+		}
+		info.meta.tts = Object.fromEntries(Object.entries(tts).filter((e) => Boolean(e[1])));
+		console.log(info.meta.tts);
 
 		if (enableDescription) {
 			info.meta.description = info.meta.description.trim() === '' ? null : info.meta.description;
@@ -255,8 +278,8 @@
 			params = { ...params, ...model?.params };
 			params.stop = params?.stop
 				? (typeof params.stop === 'string' ? params.stop.split(',') : (params?.stop ?? [])).join(
-						','
-					)
+					','
+				)
 				: null;
 
 			knowledge = (model?.meta?.knowledge ?? []).map((item) => {
@@ -285,6 +308,7 @@
 
 			capabilities = { ...capabilities, ...(model?.meta?.capabilities ?? {}) };
 			defaultFeatureIds = model?.meta?.defaultFeatureIds ?? [];
+			tts = { ...tts, ...(model?.meta?.tts ?? {}) };
 
 			if ('access_control' in model) {
 				accessControl = model.access_control;
@@ -646,6 +670,40 @@
 								</div>
 							{/if}
 						</div>
+					</div>
+
+					<hr class=" border-gray-100 dark:border-gray-850 my-2" />
+
+					<div class="my-2">
+						<div class="flex w-full justify-between items-center">
+							<div class="flex w-full justify-between items-center">
+								<div class=" self-center text-sm font-medium">
+									{$i18n.t('Text-to-Speech')}
+								</div>
+
+								<button
+									class="p-1 text-xs flex rounded-sm transition"
+									type="button"
+									on:click={() => {
+										if ((info?.meta?.tts ?? null) === null) {
+											info.meta.tts = {};
+										} else {
+											info.meta.tts = null;
+										}
+									}}
+								>
+									{#if (info?.meta?.tts) !== null}
+										<span class="ml-2 self-center">{$i18n.t('Default')}</span>
+									{:else}
+										<span class="ml-2 self-center">{$i18n.t('Custom')}</span>
+									{/if}
+								</button>
+							</div>
+						</div>
+
+						{#if (info?.meta?.tts ?? null) === null}
+							<TextToSpeech bind:tts={tts}/>
+						{/if}
 					</div>
 
 					<hr class=" border-gray-100 dark:border-gray-850 my-2" />
