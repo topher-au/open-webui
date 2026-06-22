@@ -927,6 +927,7 @@
 
 					<div class=" absolute top-4 md:top-8 left-4">
 						<button
+							id="stop-camera-button"
 							type="button"
 							class="p-1.5 text-white cursor-pointer backdrop-blur-xl bg-black/10 rounded-full"
 							on:click={() => {
@@ -984,7 +985,11 @@
 							await startVideoStream();
 						}}
 					>
-						<button class="p-3 rounded-full bg-gray-50 dark:bg-gray-900" type="button">
+						<button
+							id="switch-camera-button"
+							class="p-3 rounded-full bg-gray-50 dark:bg-gray-900"
+							type="button"
+						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 20 20"
@@ -1002,6 +1007,7 @@
 				{:else}
 					<Tooltip content={$i18n.t('Camera')}>
 						<button
+							id="start-camera-button"
 							class="p-3 rounded-full bg-gray-50 dark:bg-gray-900"
 							type="button"
 							on:click={async () => {
@@ -1034,6 +1040,7 @@
 
 				<Tooltip content={muted ? $i18n.t('Unmute') + ' (M)' : $i18n.t('Mute') + ' (M)'}>
 					<button
+						id="mute-call-button"
 						class="p-3 rounded-full transition-colors duration-200 {muted
 							? 'bg-red-500 text-white'
 							: 'bg-gray-50 dark:bg-gray-900'}"
@@ -1087,6 +1094,7 @@
 				</Tooltip>
 
 				<button
+					id="end-call-button"
 					class="p-3 rounded-full bg-gray-50 dark:bg-gray-900"
 					on:click={async () => {
 						await stopAudioStream();
